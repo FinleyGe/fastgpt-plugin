@@ -85,10 +85,6 @@ jobs:
             fi
           done
 
-          # Always include essential files
-          SPARSE_CONFIG="$SPARSE_CONFIG"$'\n'"package.json"
-          SPARSE_CONFIG="$SPARSE_CONFIG"$'\n'"bun.lockb"
-
           # Output results for GitHub Actions
           {
             echo "files<<EOF"
@@ -99,15 +95,10 @@ jobs:
             echo "$PACKAGE_CHANGES"
             echo "EOF"
 
-            echo "sparse_config<<EOF"
-            echo "$SPARSE_CONFIG"
-            echo "EOF"
-
             echo "has_relevant_changes=$HAS_RELEVANT_CHANGES"
           } >> $GITHUB_OUTPUT
 
-          echo "Final sparse checkout config:"
-          echo "$SPARSE_CONFIG"
+          echo "Package changes detected: $PACKAGE_CHANGES"
           echo ""
           echo "Has relevant changes: $HAS_RELEVANT_CHANGES"
 
