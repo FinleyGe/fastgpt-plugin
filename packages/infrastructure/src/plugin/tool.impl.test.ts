@@ -14,7 +14,7 @@ const listVersions = vi.fn();
 const getPluginByUserPluginId = vi.fn();
 const invoke = vi.fn();
 
-const makeTool = (version: string): ToolType => ({
+const makeTool = (version: string, overrides: Partial<ToolType> = {}): ToolType => ({
   pluginId: 'getTime',
   version,
   etag: `etag-${version}`,
@@ -26,7 +26,8 @@ const makeTool = (version: string): ToolType => ({
   description: {
     en: 'Get current time'
   },
-  toolDescription: 'Get current time'
+  toolDescription: 'Get current time',
+  ...overrides
 });
 
 function createToolManager(deps?: Partial<ToolManagerDeps>): ToolManager {
@@ -112,6 +113,72 @@ describe('ToolManager.detail', () => {
       source: 'system',
       version: '1.10.0'
     });
+  });
+});
+
+describe('ToolManager.batchDetail', () => {
+  beforeEach(() => {
+    listVersions.mockReset();
+    getPluginByUserPluginId.mockReset();
+    invoke.mockReset();
+  });
+
+  it('returns tool details in the same order as input ids', async () => {
+    const toolManager = createToolManager();
+    listVersions.mockResolvedValue(successResult([{ version: '1.0.0' }, { version: '2.0.0' }]));
+    getPluginByUserPluginId.mockImplementation(async ({ pluginId, version }) =>
+      successResult(makeTool(version ?? '2.0.0', { pluginId }))
+    );
+
+    const [result, err] = await toolManager.batchDetail({
+      ids: [
+        {
+          pluginId: 'first',
+          source: 'system',
+          version: '1.0.0'
+        },
+        {
+          pluginId: 'second',
+          source: 'system',
+          version: '2.0.0'
+        }
+      ]
+    });
+
+    expect(err).toBeNull();
+    expect(result?.map((tool) => tool.pluginId)).toEqual(['first', 'second']);
+    expect(getPluginByUserPluginId).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns batch failure when any detail lookup fails', async () => {
+    const toolManager = createToolManager();
+    listVersions.mockResolvedValue(successResult([{ version: '1.0.0' }]));
+    getPluginByUserPluginId.mockImplementation(async ({ pluginId }) => {
+      if (pluginId === 'missing') {
+        return failureResult({
+          en: 'Plugin not found',
+          'zh-CN': '插件未找到'
+        });
+      }
+
+      return successResult(makeTool('1.0.0', { pluginId }));
+    });
+
+    const [result, err] = await toolManager.batchDetail({
+      ids: [
+        {
+          pluginId: 'getTime',
+          source: 'system'
+        },
+        {
+          pluginId: 'missing',
+          source: 'system'
+        }
+      ]
+    });
+
+    expect(result).toBeNull();
+    expect(err?.reason.en).toBe('Failed to get tool details');
   });
 });
 

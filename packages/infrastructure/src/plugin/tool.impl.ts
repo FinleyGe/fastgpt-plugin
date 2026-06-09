@@ -7,6 +7,8 @@ import type {
   PluginRuntimeManagerPort
 } from '@domain/ports/plugin/plugin-runtime-manager.port';
 import {
+  type ToolBatchDetailInputType,
+  type ToolBatchDetailOutputType,
   type ToolDetailInputType,
   type ToolDetailType,
   type ToolListInputType,
@@ -159,6 +161,27 @@ export class ToolManager implements ToolManagerPort {
         isLatestVersion: latestVersion ? tool.version === latestVersion.version : !normalizedVersion
       })
     );
+  }
+
+  async batchDetail({ ids }: ToolBatchDetailInputType): Promise<Result<ToolBatchDetailOutputType>> {
+    const detailResults = await Promise.all(ids.map((id) => this.detail(id)));
+    const tools: ToolBatchDetailOutputType = [];
+
+    for (const [tool, detailErr] of detailResults) {
+      if (detailErr) {
+        return failureResult(
+          {
+            en: 'Failed to get tool details',
+            'zh-CN': '批量获取工具详情失败'
+          },
+          detailErr.error
+        );
+      }
+
+      tools.push(tool);
+    }
+
+    return successResult(tools);
   }
 
   async run({

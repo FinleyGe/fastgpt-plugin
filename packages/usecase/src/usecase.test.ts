@@ -29,6 +29,7 @@ import { makePluginTagListUC } from './plugin/plugin-tag-list.uc';
 import { makePluginUploadUC, type PluginUploadUCDeps } from './plugin/plugin-upload.uc';
 import { makePluginVersionsUC } from './plugin/plugin-versions.uc';
 import { makeRuntimeMetricsUC } from './runtime/runtime-metrics.uc';
+import { makeToolBatchDetailUC } from './tool/tool-batch-detail.uc';
 import { makeToolDetailUC } from './tool/tool-detail.uc';
 import { makeToolListUC } from './tool/tool-list.uc';
 import { makeToolRunUC } from './tool/tool-run.uc';
@@ -148,6 +149,7 @@ const baseModelManager = (overrides: Record<string, unknown> = {}) => ({
 const baseToolManager = (overrides: Record<string, unknown> = {}) => ({
   list: vi.fn(),
   detail: vi.fn(),
+  batchDetail: vi.fn(),
   run: vi.fn(),
   ...overrides
 });
@@ -175,6 +177,7 @@ describe('simple usecases', () => {
     const toolManager = baseToolManager({
       list: vi.fn().mockResolvedValue(result),
       detail: vi.fn().mockResolvedValue(result),
+      batchDetail: vi.fn().mockResolvedValue(result),
       run: vi.fn().mockResolvedValue(result)
     });
 
@@ -225,6 +228,16 @@ describe('simple usecases', () => {
       makeToolDetailUC({ toolManager, logger: usecaseLogger })({
         pluginId: 'plugin-a',
         source: 'system'
+      })
+    ).resolves.toEqual(result);
+    await expect(
+      makeToolBatchDetailUC({ toolManager, logger: usecaseLogger })({
+        ids: [
+          {
+            pluginId: 'plugin-a',
+            source: 'system'
+          }
+        ]
       })
     ).resolves.toEqual(result);
     await expect(
@@ -385,6 +398,24 @@ describe('simple usecases', () => {
           }),
           logger: usecaseLogger
         })({ pluginId: 'plugin-a', source: 'system' })
+    },
+    {
+      name: 'tool batch detail',
+      message: 'Tool Batch Detail Error',
+      run: (result: ReturnType<typeof failureResult>, usecaseLogger: UsecaseLogger) =>
+        makeToolBatchDetailUC({
+          toolManager: baseToolManager({
+            batchDetail: vi.fn().mockResolvedValue(result)
+          }),
+          logger: usecaseLogger
+        })({
+          ids: [
+            {
+              pluginId: 'plugin-a',
+              source: 'system'
+            }
+          ]
+        })
     },
     {
       name: 'tool run',

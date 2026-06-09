@@ -3,6 +3,8 @@ import z from 'zod';
 import { defineContract, jsonResponse } from '../contract.type';
 import { ErrorResponseDTOSchema } from '../dto/common.dto';
 import {
+  ToolBatchDetailDTOSchema,
+  ToolBatchDetailInputDTOSchema,
   ToolDetailDTOSchema,
   ToolGetParamsDTOSchema,
   ToolListDTOSchema,
@@ -26,6 +28,22 @@ export const ToolContract = {
     request: ToolGetParamsDTOSchema,
     response: {
       200: jsonResponse({ data: ToolDetailDTOSchema }),
+      404: jsonResponse({ error: ErrorResponseDTOSchema })
+    }
+  }),
+  BatchDetail: defineContract({
+    meta: {
+      method: 'post',
+      path: '/tools/detail',
+      operationId: 'tool.batchDetail',
+      description: 'Get tool details by plugin ids, versions and sources',
+      summary: 'Get tool details',
+      tags: ['plugin', 'tool'],
+      security: authToken
+    },
+    request: ToolBatchDetailInputDTOSchema,
+    response: {
+      200: jsonResponse({ data: ToolBatchDetailDTOSchema }),
       404: jsonResponse({ error: ErrorResponseDTOSchema })
     }
   }),

@@ -38,6 +38,8 @@ export type {
   STTModelItemType,
   SystemVarType,
   ToolAnswerType,
+  ToolBatchDetailInputType,
+  ToolBatchDetailType,
   ToolDetailType,
   ToolGetParamsType,
   ToolHandlerReturnType,

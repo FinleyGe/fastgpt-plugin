@@ -20,6 +20,8 @@ import type {
   PluginVersionListParamsDTOType
 } from '@interface-adapter/contracts/dto/plugin.dto';
 import type {
+  ToolBatchDetailDTOType,
+  ToolBatchDetailInputDTOType,
   ToolDetailDTOType,
   ToolGetParamsDTOType,
   ToolListDTOType,
@@ -79,6 +81,8 @@ export type {
 
 export type ToolRunInputType = ToolRunInputDTOType;
 export type ToolDetailType = ToolDetailDTOType;
+export type ToolBatchDetailType = ToolBatchDetailDTOType;
+export type ToolBatchDetailInputType = ToolBatchDetailInputDTOType;
 export type ToolGetParamsType = ToolGetParamsDTOType;
 export type ToolListType = ToolListDTOType;
 export type ToolListItemType = ToolListItemDTOType;

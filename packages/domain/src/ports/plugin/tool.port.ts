@@ -56,11 +56,20 @@ export const ToolDetailInputSchema = UserPluginIdSchema.extend({
   fallbackLatestVersion: z.boolean().optional()
 });
 
+export const ToolBatchDetailInputSchema = z.object({
+  ids: z.array(ToolDetailInputSchema).min(1)
+});
+
+export const ToolBatchDetailOutputSchema = z.array(ToolDetailSchema);
+
 export type ToolDetailInputType = z.infer<typeof ToolDetailInputSchema>;
 export type ToolDetailType = z.infer<typeof ToolDetailSchema>;
+export type ToolBatchDetailInputType = z.infer<typeof ToolBatchDetailInputSchema>;
+export type ToolBatchDetailOutputType = z.infer<typeof ToolBatchDetailOutputSchema>;
 
 export interface ToolManagerPort {
   list(arg0: ToolListInputType): Promise<Result<ToolListOutputType>>;
   detail(arg0: ToolDetailInputType): Promise<Result<ToolDetailType>>;
+  batchDetail(arg0: ToolBatchDetailInputType): Promise<Result<ToolBatchDetailOutputType>>;
   run(arg0: ToolRunInputType): Promise<Result<StreamData<ToolStreamMessageType>>>;
 }

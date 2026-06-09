@@ -100,6 +100,16 @@ export const ToolGetParamsDTOSchema = z.object({
 
 export type ToolGetParamsDTOType = z.infer<typeof ToolGetParamsDTOSchema>;
 
+export const ToolBatchDetailInputDTOSchema = z.object({
+  ids: z.array(ToolGetParamsDTOSchema).min(1)
+});
+
+export type ToolBatchDetailInputDTOType = z.input<typeof ToolBatchDetailInputDTOSchema>;
+
+export const ToolBatchDetailDTOSchema = z.array(ToolDetailDTOSchema);
+
+export type ToolBatchDetailDTOType = z.infer<typeof ToolBatchDetailDTOSchema>;
+
 export const ToolListParamsDTOSchema = z.object({
   tags: arrayQueryParam(PluginTagDTOSchema),
   op: z.enum(['or', 'and']).optional(),

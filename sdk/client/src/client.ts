@@ -8,6 +8,7 @@ import {
   PluginVersionListParamsSchema
 } from '@interface-adapter/contracts/dto/plugin.dto';
 import {
+  ToolBatchDetailInputDTOSchema,
   ToolGetParamsDTOSchema,
   ToolListParamsDTOSchema,
   ToolRunInputDTOSchema
@@ -35,6 +36,8 @@ import type {
   PluginVersionListParamsType,
   PluginVersionListType,
   RunToolStreamParams,
+  ToolBatchDetailInputType,
+  ToolBatchDetailType,
   ToolDetailType,
   ToolGetParamsType,
   ToolHandlerReturnType,
@@ -87,6 +90,20 @@ export class FastGPTPluginClient {
       path: this.withApiPath(ToolContract.Get.meta.path),
       method: ToolContract.Get.meta.method,
       query,
+      signal: requestOptions?.signal
+    });
+  }
+
+  async getTools(
+    ids: ToolBatchDetailInputType['ids'],
+    requestOptions?: ClientRequestOptions
+  ): Promise<ToolBatchDetailType> {
+    const payload = ToolBatchDetailInputDTOSchema.parse({ ids });
+
+    return this.transport.requestData<ToolBatchDetailType>({
+      path: this.withApiPath(ToolContract.BatchDetail.meta.path),
+      method: ToolContract.BatchDetail.meta.method,
+      body: payload,
       signal: requestOptions?.signal
     });
   }

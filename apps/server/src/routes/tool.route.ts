@@ -1,6 +1,10 @@
 import { ToolContract } from '@interface-adapter/contracts/route/tool.contract';
 
 import { type ToolStreamMessageType } from '@domain/value-objects/tool.vo';
+import {
+  makeToolBatchDetailUC,
+  type ToolBatchDetailUCDeps
+} from '@usecase/tool/tool-batch-detail.uc';
 import { makeToolDetailUC, type ToolDetailUCDeps } from '@usecase/tool/tool-detail.uc';
 import { makeToolListUC, type ToolListUCDeps } from '@usecase/tool/tool-list.uc';
 import { makeToolRunUC, type ToolRunUCDeps } from '@usecase/tool/tool-run.uc';
@@ -9,7 +13,10 @@ import { createRoute } from '@infrastructure/hono/utils/response';
 import { createOpenAPIHono, R } from '@infrastructure/hono/utils/response';
 import { getErrText } from '@shared/utils/err';
 
-export type ToolRouteDeps = ToolRunUCDeps & ToolListUCDeps & ToolDetailUCDeps;
+export type ToolRouteDeps = ToolRunUCDeps &
+  ToolListUCDeps &
+  ToolDetailUCDeps &
+  ToolBatchDetailUCDeps;
 
 // PlugininstallUC
 export const makeToolRoute = (deps: ToolRouteDeps) => {
@@ -44,6 +51,50 @@ export const makeToolRoute = (deps: ToolRouteDeps) => {
       const toolDetailUC = makeToolDetailUC(deps);
       const query = c.req.valid('query');
       const [result, err] = await toolDetailUC(query);
+
+      if (err) {
+        return R.fail(c, 404, err.error);
+      }
+
+      return R.success(c, result);
+    }
+  );
+
+  route.openapi(
+    createRoute({
+      ...ToolContract.BatchDetail.meta,
+      request: {
+        body: {
+          content: {
+            'application/json': {
+              schema: ToolContract.BatchDetail.request
+            }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'HTTP 200 response',
+          content: {
+            'application/json': {
+              schema: ToolContract.BatchDetail.response[200]
+            }
+          }
+        },
+        404: {
+          description: 'HTTP 404 response',
+          content: {
+            'application/json': {
+              schema: ToolContract.BatchDetail.response[404]
+            }
+          }
+        }
+      }
+    }),
+    async (c) => {
+      const toolBatchDetailUC = makeToolBatchDetailUC(deps);
+      const body = c.req.valid('json');
+      const [result, err] = await toolBatchDetailUC(body);
 
       if (err) {
         return R.fail(c, 404, err.error);
