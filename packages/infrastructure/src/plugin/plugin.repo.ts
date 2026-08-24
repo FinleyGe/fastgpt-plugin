@@ -420,7 +420,7 @@ export class PluginRepo implements PluginRepoPort {
               version: uniqueId.version,
               etag: uniqueId.etag
             },
-            { _id: 0, etag: 1 },
+            { _id: 0, etag: 1, status: 1 },
             { session }
           )
           .lean();
