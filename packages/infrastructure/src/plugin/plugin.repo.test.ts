@@ -699,6 +699,76 @@ describe('PluginRepo.createPlugin', () => {
     );
   });
 
+  it('reinstalls a disabled installation with the same identity', async () => {
+    (PluginRepo as any)._instance = undefined;
+
+    const session = { id: 'session' };
+    const installationModel = {
+      findOne: vi.fn()
+        .mockReturnValueOnce({
+          lean: vi.fn().mockResolvedValue({
+            source: 'system',
+            ...plugin(),
+            status: PluginStatusEnum.disabled
+          })
+        })
+        .mockImplementation((_filter: unknown, projection?: { status?: number }) => ({
+          lean: vi.fn().mockResolvedValue({
+            etag: 'etag-a',
+            ...(projection?.status ? { status: PluginStatusEnum.disabled } : {})
+          })
+        })),
+      find: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue([]) }),
+      updateOne: vi.fn(),
+      updateMany: vi.fn()
+    };
+    const pluginModel = {
+      findOne: vi
+        .fn()
+        .mockReturnValueOnce({
+          lean: vi.fn().mockResolvedValue({
+            _id: 'existing-plugin',
+            ...plugin(),
+            status: PluginStatusEnum.disabled
+          })
+        })
+        .mockReturnValueOnce({
+          lean: vi.fn().mockResolvedValue({ status: PluginStatusEnum.disabled })
+        }),
+      find: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue([]) }),
+      updateOne: vi.fn(),
+      updateMany: vi.fn()
+    };
+    const repo = PluginRepo.getInstance({
+      mongoClient: {
+        sessionRun: vi.fn(async (fn: (session: unknown) => Promise<unknown>) => fn(session)),
+        getModel: vi.fn((modelName: string) =>
+          modelName === 'pluginInstallation' ? installationModel : pluginModel
+        )
+      }
+    } as unknown as PluginRepoDeps);
+
+    const [result, err] = await repo.createPlugin({
+      plugin: plugin(),
+      files: {} as PkgContentFileObjects,
+      pending: false
+    });
+
+    expect(err).toBeNull();
+    expect(result).toEqual({ runtimeRegistrationRequired: true });
+    expect(installationModel.findOne).toHaveBeenNthCalledWith(
+      2,
+      {
+        source: 'system',
+        pluginId: 'plugin-a',
+        version: '1.0.0',
+        etag: 'etag-a'
+      },
+      { _id: 0, etag: 1, status: 1 },
+      { session }
+    );
+  });
+
   it('keeps an existing source-aware pending upload ready without rewriting files', async () => {
     (PluginRepo as any)._instance = undefined;
 
