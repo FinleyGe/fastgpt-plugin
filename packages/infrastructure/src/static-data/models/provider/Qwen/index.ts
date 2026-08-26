@@ -4,13 +4,8 @@ const models: ProviderConfigType = {
   provider: 'Qwen',
   list: [
     {
-      type: ModelTypeEnum.rerank,
-      model: 'qwen3-rerank',
-      maxToken: 32000
-    },
-    {
       type: ModelTypeEnum.llm,
-      model: 'qwen3.7-max',
+      model: 'qwen3.8-max',
       maxContext: 1000000,
       maxTokens: 64000,
       quoteMaxToken: 1000000,
@@ -24,7 +19,21 @@ const models: ProviderConfigType = {
     },
     {
       type: ModelTypeEnum.llm,
-      model: 'qwen3.8-max',
+      model: 'qwen3.8-flash',
+      maxContext: 1000000,
+      maxTokens: 64000,
+      quoteMaxToken: 1000000,
+      maxTemperature: 1,
+      responseFormatList: ['text', 'json_object', 'json_schema'],
+      vision: true,
+      video: true,
+      reasoning: true,
+      reasoningEffort: true,
+      toolChoice: true
+    },
+    {
+      type: ModelTypeEnum.llm,
+      model: 'qwen3.7-max',
       maxContext: 1000000,
       maxTokens: 64000,
       quoteMaxToken: 1000000,
@@ -556,6 +565,11 @@ const models: ProviderConfigType = {
       model: 'text-embedding-v3',
       defaultToken: 512,
       maxToken: 8000
+    },
+    {
+      type: ModelTypeEnum.rerank,
+      model: 'qwen3-rerank',
+      maxToken: 32000
     },
     {
       type: ModelTypeEnum.rerank,
