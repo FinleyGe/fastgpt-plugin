@@ -11,12 +11,26 @@ export interface EnsureSdkFactoryRuntimeOptions {
   searchFrom?: string;
 }
 
+export interface EnsureSdkFactoryRuntimeAtRootOptions {
+  runtimeRoot: string;
+  searchFrom?: string;
+}
+
 export async function ensureSdkFactoryRuntimeDependency({
   pluginIndexPath,
   searchFrom
 }: EnsureSdkFactoryRuntimeOptions): Promise<void> {
+  return ensureSdkFactoryRuntimeDependencyAtRoot({
+    runtimeRoot: resolveRuntimeRoot(pluginIndexPath),
+    searchFrom
+  });
+}
+
+export async function ensureSdkFactoryRuntimeDependencyAtRoot({
+  runtimeRoot,
+  searchFrom
+}: EnsureSdkFactoryRuntimeAtRootOptions): Promise<void> {
   const packageRoot = resolveSdkFactoryPackageRoot(searchFrom);
-  const runtimeRoot = resolveRuntimeRoot(pluginIndexPath);
   const targetRoot = path.join(runtimeRoot, 'node_modules', '@fastgpt-plugin');
   const targetPath = path.join(targetRoot, 'sdk-factory');
 

@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   ensureSdkFactoryRuntimeDependency,
+  ensureSdkFactoryRuntimeDependencyAtRoot,
   resolveRuntimeRoot,
   resolveSdkFactoryPackageRoot
 } from './sdk-factory-runtime';
@@ -87,6 +88,27 @@ describe('sdk factory runtime dependency', () => {
       expect(await realpath(resolveSdkFactoryPackageRoot())).toBe(await realpath(sdkFactoryRoot));
     } finally {
       process.chdir(previousCwd);
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('creates the runtime sdk package from an explicit runtime root', async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), 'sdk-factory-runtime-'));
+    const sdkFactoryRoot = path.join(tempDir, 'dist/runtime-sdk/@fastgpt-plugin/sdk-factory');
+
+    try {
+      process.env.NODE_ENV = 'production';
+      await createSdkFactoryPackage(sdkFactoryRoot);
+      process.env.FASTGPT_PLUGIN_SDK_FACTORY_PATH = sdkFactoryRoot;
+
+      await ensureSdkFactoryRuntimeDependencyAtRoot({
+        runtimeRoot: tempDir
+      });
+
+      expect(
+        await realpath(path.join(tempDir, 'node_modules/@fastgpt-plugin/sdk-factory'))
+      ).toBe(await realpath(sdkFactoryRoot));
+    } finally {
       await rm(tempDir, { recursive: true, force: true });
     }
   });
